@@ -90,6 +90,14 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        li {
+	list-style: none;
+}
+a {
+	color: inherit;
+	text-decoration: none;
+}
     </style>
 </head>
 
@@ -274,274 +282,184 @@
                 });
             };
             const calculateImpedances = () => {
-                const omega = 2 * Math.PI * frequency; // частота в радианах
+                const omega = 2 * Math.PI * frequency;
 
-                const R = resistance; // активное сопротивление
-                const XL = omega * inductance; // индуктивное сопротивление
-                const XC = 1 / (omega * (capacitance * 1e-6)); // емкостное сопротивление
-                const Z = Math.sqrt(R * R + Math.pow((XL - XC), 2)); // полный импеданс
-                const phi = Math.atan2((XL - XC), R) * 180 / Math.PI; // угол фазы
+                const R = resistance;
+                const XL = omega * inductance;
+                const XC = 1 / (omega * (capacitance * 1e-6));
+                const Z = Math.sqrt(R * R + Math.pow((XL - XC), 2));
+                const phi = Math.atan2((XL - XC), R) * 180 / Math.PI;
 
                 return { R, XL, XC, Z, phi };
             };
 
             const renderImpedances = () => {
-    const { R, XL, XC, Z, phi } = calculateImpedances(); // пересчитываем импедансы
+                const { R, XL, XC, Z, phi } = calculateImpedances(); // пересчитываем импедансы
 
-    return (
-        <div className="card mt-4">
-            <h3>Чынжырдын каршылыктары</h3>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <p><strong>Активдүү каршылык (R):</strong></p>
-                    <p>{R.toFixed(2)} Ом</p>
-                </div>
-                <div>
-                    <p><strong>Индуктивдүү каршылык (XL):</strong></p>
-                    <p>{XL.toFixed(2)} Ом</p>
-                </div>
-                <div>
-                    <p><strong>Сыйымдуулук каршылык (XC):</strong></p>
-                    <p>{XC.toFixed(2)} Ом</p>
-                </div>
-                <div>
-                    <p><strong>Толук каршылык (Z):</strong></p>
-                    <p>{Z.toFixed(2)} Ом</p>
-                </div>
-                <div>
-                    <p><strong>Фаза бурчу (φ):</strong></p>
-                    <p>{phi.toFixed(2)}°</p>
-                </div>
-            </div>
+                return (
+                    <div className="card mt-4">
+                        <h3>Чынжырдын каршылыктары</h3>
+                        <div className="grid grid-cols-2 gap-4 ">
+                            <div>
+                                <p><strong>Активдүү каршылык (R):</strong></p>
+                                <p>{R.toFixed(2)} Ом</p>
+                            </div>
+                            <div>
+                                <p><strong>Индуктивдүү каршылык (XL):</strong></p>
+                                <p>{XL.toFixed(2)} Ом</p>
+                            </div>
+                            <div>
+                                <p><strong>Сыйымдуулук каршылык (XC):</strong></p>
+                                <p>{XC.toFixed(2)} Ом</p>
+                            </div>
+                            <div>
+                                <p><strong>Толук каршылык (Z):</strong></p>
+                                <p>{Z.toFixed(2)} Ом</p>
+                            </div>
+                            <div>
+                                <p><strong>Фаза бурчу (φ):</strong></p>
+                                <p>{phi.toFixed(2)}°</p>
+                            </div>
+                        </div>
+                        <div  className="formula mb-6">
+            <p><strong>Колдонулган физикалык формулалар:</strong></p>
+            <p>1. Активдүү каршылык  (ZR = R)</p>
+            <p>2.Индуктивдүү каршылык  (ZL = ωL = 2πfL)</p>
+            <p>3.Сыйымдуулук каршылык  (ZC = 1/(ωC) = 1/(2πfC))</p>
+            <p>4.Реактивдүү каршылык (X = XL - XC)</p>
+            <p>5.Жалпы каршылык (Z = √(R² + X²))</p>
+            <p>6.Фаза бурчу (φ = arctan(X/R))</p>
         </div>
-    );
-};
-        const voltagePoints = calculateWaveform(time);
-        const currentPoints = calculateWaveform(time, phaseAngle);
-        const power = amplitude * amplitude * Math.cos(phaseAngle * Math.PI / 180) / 2;
-        const instantPower = amplitude * Math.sin(2 * Math.PI * frequency * time) *
-            amplitude * Math.sin(2 * Math.PI * frequency * time + phaseAngle * Math.PI / 180);
+                    </div>
+                );
+            };
+            const voltagePoints = calculateWaveform(time);
+            const currentPoints = calculateWaveform(time, phaseAngle);
+            const power = amplitude * amplitude * Math.cos(phaseAngle * Math.PI / 180) / 2;
+            const instantPower = amplitude * Math.sin(2 * Math.PI * frequency * time) *
+                amplitude * Math.sin(2 * Math.PI * frequency * time + phaseAngle * Math.PI / 180);
 
-        const powerFactor = Math.cos(phaseAngle * Math.PI / 180);
+            const powerFactor = Math.cos(phaseAngle * Math.PI / 180);
 
-        const renderGraph = () => (
-            <div className="mb-6">
-                <svg width={width} height={height} className="bg-gray-50 rounded-lg">
-                    {Array.from({ length: 10 }, (_, i) => (
-                        <line
-                            key={`grid-y-${i}`}
-                            x1={padding}
-                            y1={padding + i * (height - 2 * padding) / 9}
-                            x2={width - padding}
-                            y2={padding + i * (height - 2 * padding) / 9}
-                            stroke="#ddd"
-                            strokeWidth="1"
-                        />
-                    ))}
+            const renderGraph = () => (
+                <div className="mb-6">
+                    <svg width={width} height={height} className="bg-gray-50 rounded-lg">
+                        {Array.from({ length: 10 }, (_, i) => (
+                            <line
+                                key={`grid-y-${i}`}
+                                x1={padding}
+                                y1={padding + i * (height - 2 * padding) / 9}
+                                x2={width - padding}
+                                y2={padding + i * (height - 2 * padding) / 9}
+                                stroke="#ddd"
+                                strokeWidth="1"
+                            />
+                        ))}
 
-                    <line x1={padding} y1={height / 2} x2={width - padding} y2={height / 2} stroke="black" />
-                    <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="black" />
+                        <line x1={padding} y1={height / 2} x2={width - padding} y2={height / 2} stroke="black" />
+                        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="black" />
 
-                    <path
-                        d={`M ${padding + voltagePoints[0].x} ${height / 2 - voltagePoints[0].y}
+                        <path
+                            d={`M ${padding + voltagePoints[0].x} ${height / 2 - voltagePoints[0].y}
                                 ${voltagePoints.map(p => `L ${padding + p.x} ${height / 2 - p.y}`).join(' ')}`}
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="2"
-                    />
+                            fill="none"
+                            stroke="blue"
+                            strokeWidth="2"
+                        />
 
-                    <path
-                        d={`M ${padding + currentPoints[0].x} ${height / 2 - currentPoints[0].y}
+                        <path
+                            d={`M ${padding + currentPoints[0].x} ${height / 2 - currentPoints[0].y}
                                 ${currentPoints.map(p => `L ${padding + p.x} ${height / 2 - p.y}`).join(' ')}`}
-                        fill="none"
-                        stroke="red"
-                        strokeWidth="2"
-                    />
+                            fill="none"
+                            stroke="red"
+                            strokeWidth="2"
+                        />
 
 
-                    <text x={padding + 10} y={padding + 20} fill="blue">Чыңалуу</text>
-                    <text x={padding + 10} y={padding + 40} fill="red">Ток</text>
-                </svg>
-            </div>
-        );
-        const renderCircuitDiagram = () => (
-            <div>
-                {renderGraph()}
-                <div className="circuit-controls controls">
-
-                    <button
-                        className={`circuit-btn ${circuitType === 'capacitor' ? 'active' : ''}`}
-                        onClick={() => setCircuitType('capacitor')}
-                    >
-                        Конденсатор
-                    </button>
-                    <button
-                        className={`circuit-btn ${circuitType === 'inductor' ? 'active' : ''}`}
-                        onClick={() => setCircuitType('inductor')}
-                    >
-                        Катушка
-                    </button>
-                    <p>
-                        {circuitType === 'inductor'
-                            ? 'Катушкада ток чыңалуудан π/2 артта калат'
-                            : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
-                    </p>
+                        <text x={padding + 10} y={padding + 20} fill="blue">Чыңалуу</text>
+                        <text x={padding + 10} y={padding + 40} fill="red">Ток</text>
+                    </svg>
                 </div>
-
-
-            </div>
-        );
-
-        const renderParameters = () => (
-            <div className="grid">
-                <div className="card">
-                    <h3>Компоненттин параметрлери</h3>
-                    <div className="parameter-controls">
-                        <div className="control-group">
-                            <label>
-                                Каршылык: {resistance} Ом
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="1000"
-                                    value={resistance}
-                                    onChange={(e) => setResistance(Number(e.target.value))}
-                                />
-                            </label>
-                        </div>
-
-                        <div className="control-group">
-                            <label>
-                                Индуктивдүүлүк: {inductance} Гн
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="2"
-                                    step="0.1"
-                                    value={inductance}
-                                    onChange={(e) => setInductance(Number(e.target.value))}
-                                />
-                            </label>
-                        </div>
-
-                        <div className="control-group">
-                            <label>
-                                Сыйымдуулугу: {capacitance} мкФ
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="1000"
-                                    value={capacitance}
-                                    onChange={(e) => setCapacitance(Number(e.target.value))}
-                                />
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-
-        const renderCircuit = () => (
-            <div>
-                <div className="circuit-controls">
-                    <button
-                        className={`circuit-btn ${circuitType === 'capacitor' ? 'active' : ''}`}
-                        onClick={() => setCircuitType('capacitor')}
-                    >
-                        Конденсатор
-                    </button>
-                    <button
-                        className={`circuit-btn ${circuitType === 'inductor' ? 'active' : ''}`}
-                        onClick={() => setCircuitType('inductor')}
-                    >
-                        Катушка
-                    </button>
-                </div>
-                <div className="circuit-diagram">
-                    <p>
-                        {circuitType === 'inductor'
-                            ? 'Катушкада ток чыңалуудан π/2 артта калат'
-                            : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
-                    </p>
-                </div>
-            </div>
-        );
-
-        const [resistance, setResistance] = React.useState(100);
-        const [inductance, setInductance] = React.useState(0.5);
-        const [capacitance, setCapacitance] = React.useState(100);
-
-
-        return (
-            <div className="container">
-                <h2>Өзгөрмө ток</h2>
-
-                <div className="tabs">
-                    <button
-                        className={`tab ${activeTab === 'waveforms' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('waveforms')}
-                    >
-                        График
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'circuit' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('circuit')}
-                    >
-                        Схема
-                    </button>
-                    <button
-                        className={`tab ${activeTab === 'parameters' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('parameters')}
-                    >
-                        Параметр
-                    </button>
-                </div>
-
-                <div className={`tab-content ${activeTab === 'waveforms' ? 'active' : ''}`}>
+            );
+            const renderCircuitDiagram = () => (
+                <div>
                     {renderGraph()}
-                    <div className="grid">
-                        <div>
-                            <label>
-                                Жыштык: {frequency} Гц
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="120"
-                                    value={frequency}
-                                    onChange={(e) => setFrequency(Number(e.target.value))}
-                                />
-                            </label>
-                        </div>
+                    <div className="circuit-controls controls">
 
-                        <div>
-                            <label>
-                                Фаза бурчу: {phaseAngle}°
-                                <input
-                                    type="range"
-                                    min="-180"
-                                    max="180"
-                                    value={phaseAngle}
-                                    onChange={(e) => setPhaseAngle(Number(e.target.value))}
-                                />
-                            </label>
-                        </div>
+                        <button
+                            className={`circuit-btn ${circuitType === 'capacitor' ? 'active' : ''}`}
+                            onClick={() => setCircuitType('capacitor')}
+                        >
+                            Конденсатор
+                        </button>
+                        <button
+                            className={`circuit-btn ${circuitType === 'inductor' ? 'active' : ''}`}
+                            onClick={() => setCircuitType('inductor')}
+                        >
+                            Катушка
+                        </button>
+                        <p>
+                            {circuitType === 'inductor'
+                                ? 'Катушкада ток чыңалуудан π/2 артта калат'
+                                : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
+                        </p>
                     </div>
 
-                    <div className="mt-4">
-                        <div className="card">
-                            <h3>Чынжыр параметрлери</h3>
-                            <p>Кубат фактору: {powerFactor.toFixed(3)}</p>
-                            <p>Орточо кубат: {power.toFixed(2)} Вт</p>
-                            <p>Учурдагы кубат: {instantPower.toFixed(2)} Вт</p>
-                        </div>
 
-                        <button onClick={() => setIsRunning(!isRunning)}>
-                            {isRunning ? 'Пауза' : 'Старт'}
-                        </button>
+                </div>
+            );
+
+            const renderParameters = () => (
+                <div className="grid">
+                    <div className="card">
+                        <h3>Компоненттин параметрлери</h3>
+                        <div className="parameter-controls">
+                            <div className="control-group">
+                                <label>
+                                    Каршылык: {resistance} Ом
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="1000"
+                                        value={resistance}
+                                        onChange={(e) => setResistance(Number(e.target.value))}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="control-group">
+                                <label>
+                                    Индуктивдүүлүк: {inductance} Гн
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="2"
+                                        step="0.1"
+                                        value={inductance}
+                                        onChange={(e) => setInductance(Number(e.target.value))}
+                                    />
+                                </label>
+                            </div>
+
+                            <div className="control-group">
+                                <label>
+                                    Сыйымдуулугу: {capacitance} мкФ
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="1000"
+                                        value={capacitance}
+                                        onChange={(e) => setCapacitance(Number(e.target.value))}
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            );
 
-                <div className={`tab-content ${activeTab === 'circuit' ? 'active' : ''}`}>
+            const renderCircuit = () => (
+                <div>
                     <div className="circuit-controls">
                         <button
                             className={`circuit-btn ${circuitType === 'capacitor' ? 'active' : ''}`}
@@ -556,127 +474,242 @@
                             Катушка
                         </button>
                     </div>
-
-
-
-                    <div className="circuit-graph">
-                        <svg width={width} height={height}>
-
-                            <line x1={padding} y1={height / 2} x2={width - padding} y2={height / 2} stroke="black" />
-                            <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="black" />
-
-
-                            <path
-                                d={`M ${padding} ${height / 2} ${Array.from({ length: 100 }, (_, i) => {
-                                    const x = i * (width - 2 * padding) / 99 + padding;
-                                    const y = height / 2 - 50 * Math.sin(2 * Math.PI * i / 99 + time);
-                                    return `L ${x} ${y}`;
-                                }).join(' ')}`}
-                                fill="none"
-                                stroke="blue"
-                                strokeWidth="2"
-                            />
-
-                            <path
-                                d={`M ${padding} ${height / 2} ${Array.from({ length: 100 }, (_, i) => {
-                                    const x = i * (width - 2 * padding) / 99 + padding;
-                                    const y = height / 2 - 50 * Math.sin(2 * Math.PI * i / 99 + time +
-                                        (circuitType === 'inductor' ? -Math.PI / 2 : Math.PI / 2));
-                                    return `L ${x} ${y}`;
-                                }).join(' ')}`}
-                                fill="none"
-                                stroke="red"
-                                strokeWidth="2"
-                            />
-
-                            <text x={padding + 10} y={padding + 20} fill="blue">Чыңалуу</text>
-                            <text x={padding + 10} y={padding + 40} fill="red">Ток</text>
-                        </svg>
+                    <div className="circuit-diagram">
+                        <p>
+                            {circuitType === 'inductor'
+                                ? 'Катушкада ток чыңалуудан π/2 артта калат'
+                                : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
+                        </p>
                     </div>
+                </div>
+            );
 
-                    <p style={{ textAlign: 'center', marginTop: '10px' }}>
-                        {circuitType === 'inductor'
-                            ? 'Катушкада ток чыңалуудан π/2 артта калат'
-                            : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
-                    </p>
+            const [resistance, setResistance] = React.useState(100);
+            const [inductance, setInductance] = React.useState(0.5);
+            const [capacitance, setCapacitance] = React.useState(100);
 
-                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                        <button onClick={() => setIsRunning(!isRunning)}>
-                            {isRunning ? 'Пауза' : 'Старт'}
+
+
+
+            return (
+                <div className="container">
+                    <h2>Өзгөрмө ток</h2>
+
+                    <div className="tabs">
+                        <button
+                            className={`tab ${activeTab === 'waveforms' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('waveforms')}
+                        >
+                            График
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'circuit' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('circuit')}
+                        >
+                            Схема
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'parameters' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('parameters')}
+                        >
+                            Параметр
+                        </button>
+                        <button
+                            className={`tab ${activeTab === 'oscilloscope' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('oscilloscope')} 
+                        ><li><a href="./occ.html">Осциллограф</a></li>
+                           
                         </button>
                     </div>
-                </div>
-                <div className={`tab-content ${activeTab === 'parameters' ? 'active' : ''}`}>
-                    <div className="grid">
-                        <div className="card">
-                            <RotatingVectorVisualization />
-                            <h3>Компоненттин параметрлери</h3>
-                            <div className="parameter-controls">
-                                <div className="control-group">
-                                    <label>
-                                        Активдүү каршылык: {resistance} Ом
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="1000"
-                                            value={resistance}
-                                            onChange={(e) => setResistance(Number(e.target.value))}
-                                        />
-                                    </label>
-                                </div>
 
-                                <div className="control-group">
-                                    <label>
-                                        Индуктивдүүлүк: {inductance} Гн
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="2"
-                                            step="0.1"
-                                            value={inductance}
-                                            onChange={(e) => setInductance(Number(e.target.value))}
-                                        />
-                                    </label>
-                                </div>
 
-                                <div className="control-group">
-                                    <label>
-                                        Сыйымдуулук: {capacitance} мкФ
-                                        <input
-                                            type="range"
-                                            min="1"
-                                            max="1000"
-                                            value={capacitance}
-                                            onChange={(e) => setCapacitance(Number(e.target.value))}
-                                        />
-                                    </label>
-                                </div>
-                                <div className="control-group">
-                                    <label>
-                                        Жыштык: {frequency} Гц
-                                        <input
-                                            type="range"
-                                            min="1"
-                                            max="120"
-                                            value={frequency}
-                                            onChange={(e) => setFrequency(Number(e.target.value))}
-                                        />
-                                    </label>
-                                </div>
 
+                    <div className={`tab-content ${activeTab === 'waveforms' ? 'active' : ''}`}>
+                        {renderGraph()}
+                        <div className="grid">
+                            <div>
+                                <label>
+                                    Жыштык: {frequency} Гц
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="120"
+                                        value={frequency}
+                                        onChange={(e) => setFrequency(Number(e.target.value))}
+                                    />
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                    Фаза бурчу: {phaseAngle}°
+                                    <input
+                                        type="range"
+                                        min="-180"
+                                        max="180"
+                                        value={phaseAngle}
+                                        onChange={(e) => setPhaseAngle(Number(e.target.value))}
+                                    />
+                                </label>
                             </div>
                         </div>
-                        {renderImpedances()}
+
+                        <div className="mt-4">
+                            <div className="card">
+                                <h3>Чынжыр параметрлери</h3>
+                                <p>Кубат фактору: {powerFactor.toFixed(3)}</p>
+                                <p>Орточо кубат: {power.toFixed(2)} Вт</p>
+                                <p>Учурдагы кубат: {instantPower.toFixed(2)} Вт</p>
+                            </div>
+
+                            <button onClick={() => setIsRunning(!isRunning)}>
+                                {isRunning ? 'Токтоо' : 'Баштоо'}
+                            </button>
+                        </div>
                     </div>
 
+                    <div className={`tab-content ${activeTab === 'circuit' ? 'active' : ''}`}>
+                        <div className="circuit-controls">
+                            <button
+                                className={`circuit-btn ${circuitType === 'capacitor' ? 'active' : ''}`}
+                                onClick={() => setCircuitType('capacitor')}
+                            >
+                                Конденсатор
+                            </button>
+                            <button
+                                className={`circuit-btn ${circuitType === 'inductor' ? 'active' : ''}`}
+                                onClick={() => setCircuitType('inductor')}
+                            >
+                                Катушка
+                            </button>
+                        </div>
+
+
+
+                        <div className="circuit-graph">
+                            <svg width={width} height={height}>
+
+                                <line x1={padding} y1={height / 2} x2={width - padding} y2={height / 2} stroke="black" />
+                                <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="black" />
+
+
+                                <path
+                                    d={`M ${padding} ${height / 2} ${Array.from({ length: 100 }, (_, i) => {
+                                        const x = i * (width - 2 * padding) / 99 + padding;
+                                        const y = height / 2 - 50 * Math.sin(2 * Math.PI * i / 99 + time);
+                                        return `L ${x} ${y}`;
+                                    }).join(' ')}`}
+                                    fill="none"
+                                    stroke="blue"
+                                    strokeWidth="2"
+                                />
+
+                                <path
+                                    d={`M ${padding} ${height / 2} ${Array.from({ length: 100 }, (_, i) => {
+                                        const x = i * (width - 2 * padding) / 99 + padding;
+                                        const y = height / 2 - 50 * Math.sin(2 * Math.PI * i / 99 + time +
+                                            (circuitType === 'inductor' ? -Math.PI / 2 : Math.PI / 2));
+                                        return `L ${x} ${y}`;
+                                    }).join(' ')}`}
+                                    fill="none"
+                                    stroke="red"
+                                    strokeWidth="2"
+                                />
+
+                                <text x={padding + 10} y={padding + 20} fill="blue">Чыңалуу</text>
+                                <text x={padding + 10} y={padding + 40} fill="red">Ток</text>
+                            </svg>
+                        </div>
+
+                        <p style={{ textAlign: 'center', marginTop: '10px' }}>
+                            {circuitType === 'inductor'
+                                ? 'Катушкада ток чыңалуудан π/2 артта калат'
+                                : 'Конденсаторда ток чыңалуудан π/2 алдыда болот'}
+                        </p>
+
+                        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                            <button onClick={() => setIsRunning(!isRunning)}>
+                                {isRunning ? 'Пауза' : 'Старт'}
+                            </button>
+                        </div>
+                    </div>
+                  
+                    <div className={`tab-content ${activeTab === 'parameters' ? 'active' : ''}`}>
+                        <div className="grid">
+                            <div className="card">
+                                <RotatingVectorVisualization />
+                                <h3>Компоненттин параметрлери</h3>
+                                <div className="parameter-controls">
+                                    <div className="control-group">
+                                        <label>
+                                            Активдүү каршылык: {resistance} Ом
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1000"
+                                                value={resistance}
+                                                onChange={(e) => setResistance(Number(e.target.value))}
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className="control-group">
+                                        <label>
+                                            Индуктивдүүлүк: {inductance} Гн
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="2"
+                                                step="0.1"
+                                                value={inductance}
+                                                onChange={(e) => setInductance(Number(e.target.value))}
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className="control-group">
+                                        <label>
+                                            Сыйымдуулук: {capacitance} мкФ
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="1000"
+                                                value={capacitance}
+                                                onChange={(e) => setCapacitance(Number(e.target.value))}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="control-group">
+                                        <label>
+                                            Жыштык: {frequency} Гц
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="120"
+                                                value={frequency}
+                                                onChange={(e) => setFrequency(Number(e.target.value))}
+                                            />
+                                        </label>
+                                    </div>
+
+
+                                </div>
+                            </div>
+                            {renderImpedances()}
+                        </div>
+                        
+
+                    </div>
+                    
+                
+                        
                 </div>
-            </div>
-        );
+            );
         };
 
         ReactDOM.render(<ACVisualization />, document.getElementById('root'));
     </script>
-
+   
     <style>
         .mt-4 {
             margin-top: 1rem;

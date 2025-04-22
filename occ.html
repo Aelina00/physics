@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Санариптик осциллограф</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        canvas {
+            background-color: black;
+            border: 1px solid #4B5563;
+            border-radius: 4px;
+        }
+        
+        .controls {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            margin-bottom: 0.25rem;
+        }
+        
+        select {
+            background-color: #6a6e74;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: none;
+            color: white;
+        }
+        
+        input[type="range"] {
+            width: 160px;
+        }
+        
+        button {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .start-button {
+            background-color: #10B981;
+        }
+        
+        .stop-button {
+            background-color: #EF4444;
+        }
+        
+        .measurements {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        
+        .measurements h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .measurement-values {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Формулалар үчүн стиль */
+        .formula {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Осциллограф </h2>
+        <div class="canvas-container">
+            <canvas id="oscilloscopeCanvas" width="600" height="400"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="waveType">Сигнал түрү:</label>
+                <select id="waveType">
+                    <option value="sine">Синусоида</option>
+                    <option value="square">Тик бурчтуу</option>
+                    <option value="triangle">Үч бурчтук</option>
+                    <option value="sawtooth">Аррача</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label id="frequencyLabel">Жыштык: 1.0 Гц</label>
+                <input type="range" id="frequency" min="0.1" max="10" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label id="amplitudeLabel">Амплитуда: 50</label>
+                <input type="range" id="amplitude" min="10" max="100" value="50">
+            </div>
+            
+            <div class="control-group">
+                <label id="timeScaleLabel">Убакыт масштабы: 1.0x</label>
+                <input type="range" id="timeScale" min="0.1" max="5" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label id="triggerLevelLabel">Триггер деңгээли: 0</label>
+                <input type="range" id="triggerLevel" min="-100" max="100" value="0">
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label id="measurePoint1Label">Маркер 1: 100</label>
+                <input type="range" id="measurePoint1" min="0" max="599" value="100">
+            </div>
+            
+            <div class="control-group">
+                <label id="measurePoint2Label">Маркер 2: 300</label>
+                <input type="range" id="measurePoint2" min="0" max="599" value="300">
+            </div>
+            
+            <button id="runButton" class="stop-button">Токтотуу</button>
+        </div>
+        
+        <div class="measurements">
+            <h3>Өлчөөлөр:</h3>
+            <div class="measurement-values">
+                <div>
+                    <p id="amplitudeMeasure">Амплитуда: 0 бирдик</p>
+                    <p id="periodMeasure">Мезгил: 0 мс</p>
+                    <p id="frequencyMeasure">Жыштык: 0 Гц</p>
+                </div>
+            </div>
+        </div>
+        <div class="formula">
+            <p><strong>Осциллографта колдонулган физикалык формулалар:</strong></p>
+            <p>1. Синусоидалык сигнал: y = A·sin(2πft/T<sub>s</sub>)</p>
+            <p>2. Тик бурчтуу сигнал: y = A·sign(sin(2πft/T<sub>s</sub>))</p>
+            <p>3. Үч бурчтук сигнал: y = A·(2/π)·arcsin(sin(2πft/T<sub>s</sub>))</p>
+            <p>4. Аррача сигнал: y = A·((2ft/T<sub>s</sub>) mod 2 - 1)</p>
+            <p>5. Амплитуданы өлчөө: A = |y<sub>max</sub> - y<sub>min</sub>|/2</p>
+            <p>6. Мезгилди өлчөө: T = (n<sub>чекиттер</sub>/n<sub>мезгилдер</sub>)·(1/f<sub>дискреттик</sub>)</p>
+            <p>7. Жыштыкты өлчөө: f = 1/T</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM элементтери
+        const canvas = document.getElementById('oscilloscopeCanvas');
+        const ctx = canvas.getContext('2d');
+        const runButton = document.getElementById('runButton');
+        
+        // Селекторлор жана регуляторлор
+        const waveTypeSelect = document.getElementById('waveType');
+        const frequencyInput = document.getElementById('frequency');
+        const amplitudeInput = document.getElementById('amplitude');
+        const timeScaleInput = document.getElementById('timeScale');
+        const triggerLevelInput = document.getElementById('triggerLevel');
+        const measurePoint1Input = document.getElementById('measurePoint1');
+        const measurePoint2Input = document.getElementById('measurePoint2');
+        
+        // Тексттик жарлыктар
+        const frequencyLabel = document.getElementById('frequencyLabel');
+        const amplitudeLabel = document.getElementById('amplitudeLabel');
+        const timeScaleLabel = document.getElementById('timeScaleLabel');
+        const triggerLevelLabel = document.getElementById('triggerLevelLabel');
+        const measurePoint1Label = document.getElementById('measurePoint1Label');
+        const measurePoint2Label = document.getElementById('measurePoint2Label');
+        
+        // Өлчөө элементтери
+        const amplitudeMeasure = document.getElementById('amplitudeMeasure');
+        const periodMeasure = document.getElementById('periodMeasure');
+        const frequencyMeasure = document.getElementById('frequencyMeasure');
+        
+        // Осциллограф параметрлери
+        let running = true;
+        let frequency = 1;
+        let amplitude = 50;
+        let timeScale = 1;
+        let waveType = 'sine';
+        let triggerLevel = 0;
+        let measurePoint1 = 100;
+        let measurePoint2 = 300;
+        let measurements = { amplitude: 0, period: 0, frequency: 0 };
+        
+        // Анимация ID үчүн өзгөрмө
+        let animationId = null;
+        
+        // Башкаруу элементтери үчүн окуялар иштеткичтери
+        waveTypeSelect.addEventListener('change', (e) => {
+            waveType = e.target.value;
+        });
+        
+        frequencyInput.addEventListener('input', (e) => {
+            frequency = parseFloat(e.target.value);
+            frequencyLabel.textContent = `Жыштык: ${frequency.toFixed(1)} Гц`;
+        });
+        
+        amplitudeInput.addEventListener('input', (e) => {
+            amplitude = parseInt(e.target.value);
+            amplitudeLabel.textContent = `Амплитуда: ${amplitude}`;
+        });
+        
+        timeScaleInput.addEventListener('input', (e) => {
+            timeScale = parseFloat(e.target.value);
+            timeScaleLabel.textContent = `Убакыт масштабы: ${timeScale.toFixed(1)}x`;
+        });
+        
+        triggerLevelInput.addEventListener('input', (e) => {
+            triggerLevel = parseInt(e.target.value);
+            triggerLevelLabel.textContent = `Триггер деңгээли: ${triggerLevel}`;
+        });
+        
+        measurePoint1Input.addEventListener('input', (e) => {
+            measurePoint1 = parseInt(e.target.value);
+            measurePoint1Label.textContent = `Маркер 1: ${measurePoint1}`;
+        });
+        
+        measurePoint2Input.addEventListener('input', (e) => {
+            measurePoint2 = parseInt(e.target.value);
+            measurePoint2Label.textContent = `Маркер 2: ${measurePoint2}`;
+        });
+        
+        runButton.addEventListener('click', () => {
+            running = !running;
+            if (running) {
+                runButton.textContent = 'Токтотуу';
+                runButton.className = 'stop-button';
+                if (!animationId) {
+                    animate();
+                }
+            } else {
+                runButton.textContent = 'Баштоо';
+                runButton.className = 'start-button';
+            }
+        });
+        
+        // Сигнал чекиттерин генерациялоо функциясы
+        function generatePoints(time, width) {
+            const points = [];
+            const step = 1;
+            let triggered = false;
+            let triggerIndex = 0;
+            
+            for (let x = 0; x < width; x += step) {
+                const t = (x + time * 100 * timeScale) / 100;
+                let y = 0;
+                
+                // Ар кандай толкун түрлөрү физикалык формулалар менен
+                switch (waveType) {
+                    case 'sine':
+                        // Синусоида формуласы: y = A·sin(2πft/Ts)
+                        // бул жерде A - амплитуда, f - жыштык, t - убакыт, Ts - убакыт масштабы
+                        y = amplitude * Math.sin(2 * Math.PI * frequency * t / timeScale);
+                        break;
+                    case 'square':
+                        // Тик бурчтуу сигнал формуласы: y = A·sign(sin(2πft/Ts))
+                        // sign функциясы оң маанилер үчүн +1, терс маанилер үчүн -1 кайтарат
+                        y = amplitude * Math.sign(Math.sin(2 * Math.PI * frequency * t / timeScale));
+                        break;
+                    case 'triangle':
+                        // Үч бурчтуу сигнал формуласы: y = A·(2/π)·arcsin(sin(2πft/Ts))
+                        // arcsin жана sin комбинациясы үч бурчтуу толкун формасын түзөт
+                        y = amplitude * (2 / Math.PI) * Math.asin(Math.sin(2 * Math.PI * frequency * t / timeScale));
+                        break;
+                    case 'sawtooth':
+                        // Аррача сигнал формуласы: y = A·((2ft/Ts) mod 2 - 1)
+                        // mod 2 операциясы 0дөн 2ге чейинки мезгилдүү сигналды түзөт, 1ди кемитүү аны -1ден 1ге чейин борборлоштурат
+                        y = amplitude * ((2 * frequency * t / timeScale) % 2 - 1);
+                        break;
+                    default:
+                        y = amplitude * Math.sin(2 * Math.PI * frequency * t / timeScale);
+                }
+                
+                // Триггерди издөө (белгиленген деңгээлден өтүү)
+                if (!triggered && points.length > 0) {
+                    const prevY = points[points.length - 1].y;
+                    if ((prevY <= triggerLevel && y >= triggerLevel) || 
+                        (prevY >= triggerLevel && y <= triggerLevel)) {
+                        triggered = true;
+                        triggerIndex = points.length;
+                    }
+                }
+                
+                points.push({ x, y });
+            }
+            
+            // Көрсөтүүнү стабилдештирүү үчүн триггерди колдонобуз
+            if (triggered && triggerIndex > 0) {
+                const shift = triggerIndex;
+                return [...points.slice(shift), ...points.slice(0, shift)];
+            }
+            
+            return points;
+        }
+        
+        // Өлчөөлөрдү эсептөө функциясы
+        function calculateMeasurements(points, p1Index, p2Index) {
+            if (points.length === 0 || p1Index >= points.length || p2Index >= points.length) return;
+            
+            // Маркерлердин ортосундагы амплитуданы эсептөө
+            // Маркерлердин ортосундагы минималдуу жана максималдуу маанилерди табабыз
+            let minY = Infinity;
+            let maxY = -Infinity;
+            
+            // Маркерлердин ортосундагы диапазонду аныктайбыз
+            const startIdx = Math.min(p1Index, p2Index);
+            const endIdx = Math.max(p1Index, p2Index);
+            
+            // Чекиттерди карап чыгып, минималдуу жана максималдуу маанилерди табабыз
+            for (let i = startIdx; i <= endIdx; i++) {
+                const y = points[i].y;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+            
+            // Амплитуда формуласы: A = (ymax - ymin)/2
+            // Амплитуда - бул толкундун жарымы (максимум менен минимумдун ортосундагы айырма)
+            const amplitudeMeasure = (maxY - minY) / 2;
+            
+            // Мезгилди табуу (удаалаш нөл кесилиштердин ортосундагы аралык)
+            let prevY = points[0].y;
+            let crossings = [];
+            
+            for (let i = 1; i < points.length; i++) {
+                const currentY = points[i].y;
+                
+                // Нөл кесилишин аныктоо (мезгилди өлчөө үчүн)
+                // Сигнал нөлдөн өткөн учурду каттайбыз
+                if ((prevY < 0 && currentY >= 0) || (prevY > 0 && currentY <= 0)) {
+                    crossings.push(i);
+                }
+                
+                prevY = currentY;
+            }
+            
+            // Мезгил жана жыштыкты эсептейбиз
+            let period = 0;
+            if (crossings.length >= 2) {
+                // Табылган бардык мезгилдер боюнча орточо маанини чыгарабыз
+                let totalPeriod = 0;
+                let periodCount = 0;
+                
+                for (let i = 1; i < crossings.length; i++) {
+                    const periodSamples = crossings[i] - crossings[i-1];
+                    totalPeriod += periodSamples;
+                    periodCount++;
+                }
+                
+                if (periodCount > 0) {
+                    // Мезгил формуласы: T = (чекиттердин саны / мезгилдердин саны) * (1/дискреттештирүү жыштыгы)
+                    // Болжолдуу дискреттештирүү жыштыгы: секундуна 100 чекит * timeScale
+                    const samplingRate = 100 * timeScale;
+                    period = (totalPeriod / periodCount) * (1000 / samplingRate); // Миллисекундага айландырабыз
+                }
+            }
+            
+            // Жыштык формуласы: f = 1/T
+            // Жыштык - бул мезгилге карата тескери чоңдук
+            const calculatedFrequency = period > 0 ? 1000 / period : 0; // 1000 мс = 1 с
+            
+            measurements = {
+                amplitude: amplitudeMeasure.toFixed(2),
+                period: period.toFixed(2),
+                frequency: calculatedFrequency.toFixed(2)
+            };
+            
+            // Өлчөөлөрдү көрсөтүүнү жаңыртабыз
+            amplitudeMeasure.textContent = `Амплитуда: ${measurements.amplitude} бирдик`;
+            periodMeasure.textContent = `Мезгил: ${measurements.period} мс`;
+            frequencyMeasure.textContent = `Жыштык: ${measurements.frequency} Гц`;
+        }
+        
+        // Анимация функциясы
+        function animate(timestamp) {
+            if (!timestamp) timestamp = 0;
+            
+            if (running) {
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Торду чийүү
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 0.5;
+                
+                // Вертикалдык тор сызыктары
+                for (let x = 0; x < width; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                    ctx.stroke();
+                }
+                
+                // Горизонталдык тор сызыктары
+                for (let y = 0; y < height; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                    ctx.stroke();
+                }
+                
+                // Борбордук сызыктар
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 1;
+                
+                // Горизонталдык борбордук сызык
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+                
+                // Вертикалдык борбордук сызык
+                ctx.beginPath();
+                ctx.moveTo(width / 2, 0);
+                ctx.lineTo(width / 2, height);
+                ctx.stroke();
+                
+                // Триггер сызыгы
+                ctx.strokeStyle = '#FFA500';
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2 - triggerLevel);
+                ctx.lineTo(width, height / 2 - triggerLevel);
+                ctx.stroke();
+                
+                // Өлчөө маркерлерин чийүү
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 1;
+                
+                // Маркер 1
+                ctx.beginPath();
+                ctx.moveTo(measurePoint1, 0);
+                ctx.lineTo(measurePoint1, height);
+                ctx.stroke();
+                
+                // Маркер 2
+                ctx.beginPath();
+                ctx.moveTo(measurePoint2, 0);
+                ctx.lineTo(measurePoint2, height);
+                ctx.stroke();
+                
+                // Сигналды генерациялап жана чийүү
+                const points = generatePoints(timestamp / 1000, width);
+                
+                ctx.strokeStyle = '#00FF00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                // Сигнал графигин чийүү
+                points.forEach((point, index) => {
+                    const { x, y } = point;
+                    if (index === 0) {
+                        ctx.moveTo(x, height / 2 - y);
+                    } else {
+                        ctx.lineTo(x, height / 2 - y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // Өлчөөлөрдү жаңыртуу
+                const p1Index = Math.min(Math.floor(measurePoint1), points.length - 1);
+                const p2Index = Math.min(Math.floor(measurePoint2), points.length - 1);
+                calculateMeasurements(points, p1Index, p2Index);
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // Анимацияны баштоо
+        animate();
+    </script>
+</body>
+</html>
